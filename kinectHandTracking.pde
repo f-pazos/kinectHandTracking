@@ -75,8 +75,8 @@ PImage hough(PImage edges, PImage gx, PImage gy, int[] boundaries){
         int index = edges.width*r + c;
         
         if( (int)(edges.pixels[index]) != 0){
-          double dx = (int)gx.pixels[index];
-          double dy = (int)gy.pixels[index];
+          double dy = (int)gx.pixels[index];
+          double dx = (int)gy.pixels[index];
           
           double mag = sqrt((float)(dy*dy + dx*dx));
           
@@ -392,9 +392,16 @@ PImage grads(PImage img){
       
       
       
-      gradient.set(c, r, color(val) );
+      gradient.set(c, r, val );
     }
   }
+  
+  maxVal = 0;
+  
+  for( int c : gradient.pixels){
+    maxVal = max( c, maxVal );
+  }
+  
   
   return gradient;
 }
