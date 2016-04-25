@@ -19,7 +19,7 @@ void setup(){
 void draw() {
   background(0);
   PImage ir = kinect.getInfraredImage();
-  PImage irGradient = grads( ir );
+  PImage irGradient = grads( ir , 3);
   PImage irThreshold = isolateTopRange( irGradient, 0.1, false);
   int[] corners = findCorners( irThreshold, 20, 20, .12 );
   
@@ -27,18 +27,18 @@ void draw() {
   PImage gx = grads[0];
   PImage gy = grads[1];
   
-  PImage votes = hough( irThreshold, gx, gy, corners );
-  PImage restrictVotes = isolateTopRange( votes, 0.70, true );
+  //PImage votes = hough( irThreshold, gx, gy, corners );
+  //PImage restrictVotes = isolateTopRange( votes, 0.70, true );
   
-  image( irGradient, 0, 0 );
-  image( votes, 0, irThreshold.height);
-  image( irThreshold, ir.width, 0);
-  image( restrictVotes , ir.width, ir.height);
+  image( ir, 0, 0 );
+  //image( votes, 0, irThreshold.height);
+  //image( irThreshold, ir.width, 0);
+  //image( restrictVotes , ir.width, ir.height);
   
-  int xMinBoundary = corners[0];
-  int yMinBoundary = corners[1];
-  int xMaxBoundary = corners[2];
-  int yMaxBoundary = corners[3];
+  int xMinBoundary = 3*corners[0];
+  int yMinBoundary = 3*corners[1];
+  int xMaxBoundary = 3*corners[2];
+  int yMaxBoundary = 3*corners[3];
   xMaxBoundary = xMaxBoundary - xMinBoundary;
   yMaxBoundary = yMaxBoundary - yMinBoundary;
   
@@ -338,7 +338,7 @@ PImage isolateTopRange( PImage img, double threshold, boolean dispText ){
   
 }
 
-PImage grads(PImage img){
+PImage grads(PImage img, int skip){
   
   int[][] gxW = new int[3][3];
   int[][] gyW = new int[3][3];
@@ -363,36 +363,36 @@ PImage grads(PImage img){
   gyW[2][1] = 2;
   gyW[2][2] = 1;
   
-  PImage gradient = createImage(img.width, img.height, RGB);
+  PImage gradient = createImage(img.width/skip, img.height/skip, RGB);
   
   img.loadPixels();
   gradient.loadPixels();
   
   
-  for (int r = 0; r < img.height; r++){
-    for (int c = 0; c < img.width; c++){
+  for (int r = 0; r < img.height; r += skip){
+    for (int c = 0; c < img.width; c += skip){
       
       int gx = 0;
       int gy = 0;
       
-      for (int rLocal = r-1; rLocal < r+2; rLocal++){
-        for (int cLocal = c-1; cLocal < c+2; cLocal++){
+      for (int rLocal = r-skip; rLocal < r+2*skip; rLocal += skip){
+        for (int cLocal = c-skip; cLocal < c+2*skip; cLocal += skip){
           if ( (rLocal > 0) && (rLocal < img.height) && (cLocal > 0) && (cLocal < img.width)){
             
             int index = img.width*rLocal + cLocal;
             
             int localPixel = img.pixels[index];
             
-            gx += gxW[rLocal - (r-1)][cLocal - (c-1)] * (int)localPixel;
-            gy += gyW[rLocal - (r-1)][cLocal - (c-1)] * (int)localPixel;
-         
+            gx += gxW[(rLocal - (r-skip))/skip][(cLocal - (c-skip))/skip] * (int)localPixel;
+            gy += gyW[(rLocal - (r-skip))/skip][(cLocal - (c-skip))/skip] * (int)localPixel;
+        
           }}}
           
       int val = int( abs(gx) + abs(gy) );
       
       
       
-      gradient.set(c, r, color(val) );
+      gradient.set(c/skip, r/skip, color(val) );
     }
   }
   
